@@ -4,13 +4,20 @@
 #include <cstdint>
 #include <limits>
 
-// https://en.wikipedia.org/wiki/Fast_inverse_square_root
-static constexpr float fastInvSqrt(float x) noexcept
-{
-    static_assert(std::numeric_limits<float>::is_iec559);
-    float const y = std::bit_cast<float>(
-            0x5F1FFFF9 - (std::bit_cast<std::uint32_t>(x) >> 1));
-    return y * (0.703952253f * (2.38924456f - (x * y * y)));
+static constexpr float fastInvSqrt( float number ){
+    union {
+        float f;
+        uint32_t i;
+    } conv;
+
+    float x2;
+    const float threehalfs = 1.5F;
+
+    x2 = number * 0.5F;
+    conv.f  = number;
+    conv.i  = 0x5f3759df - ( conv.i >> 1 );
+    conv.f  = conv.f * ( threehalfs - ( x2 * conv.f * conv.f ) );
+    return conv.f;
 }
 
 static constexpr float fastSqrt(float x)
